@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <ul></ul>
+    <script>
+        const ws = new WebSocket("ws://127.0.0.1:5678")
+        messages = document.createElement("ul")
+
+        ws.onmessage = function(event){
+            messages = document.getElementsByTagName("ul")[0]
+            let message = document.createElement("li")
+            let content = document.createTextNode(event.data)
+
+            messages.appendChild(message)
+            message.appendChild(content)
+        }
+
+    </script>
+</body>
+</html>
