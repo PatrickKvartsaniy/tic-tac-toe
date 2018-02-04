@@ -24,10 +24,6 @@ class Game{
         this.turn = name1
     }
 
-    move(){
-        //
-    }
-
     build(){
     
         let total_id = 0;
@@ -52,10 +48,27 @@ class Game{
     
             el.id = total_id
             el.state = null;
-            el.onclick = function(){this.move()}
+            el.onclick = function(){game.move(this)}
     
             field.appendChild(el)
             total_id++
+        }
+    }
+
+    move(obj){
+        if (!obj.state) {
+            
+            obj.state = this.turn 
+            console.log(obj.state)
+    
+            if (this.turn == "Petro"){
+                obj.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/player.jpg?raw=true)"
+            }
+            else{
+                obj.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/ai.jpg?raw=trueg)"
+            }
+            // history = history.concat({"Player":state,"Square":id})
+            this.next_turn()
         }
     }
 
@@ -67,24 +80,8 @@ class Game{
             this.turn = this.player1
         }
     }
-
-    move(){
-        if (!this.state) {
-            
-            this.state = this.turn 
-            console.log(this.state)
-
-            if (this.turn == "Petro"){
-                this.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/player.jpg?raw=true)"
-            }
-            else{
-                this.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/ai.jpg?raw=trueg)"
-            }
-            // history = history.concat({"Player":state,"Square":id})
-            this.next_turn()
-        }
-    }
 }
+
 
 game = new Game("Petro","Maria", 3)
 game.build()
