@@ -1,14 +1,24 @@
-// const ws = new WebSocket("ws://127.0.0.1:5678")
+ws = new WebSocket("ws://" + location.host + "/connect")
 
-// ws.onmessage = function(event){
-//     messages = document.getElementsByTagName("ul")[0]
-//     let message = document.createElement("li")
-//     let content = document.createTextNode(event.data)
+ws.onopen = function(){
+    console.log("Connetcted")
+    // ws.send("Connect")
+}
 
-//     messages.appendChild(message)
-//     message.appendChild(content)
-// };  
+ws.onmessage = function(e){
 
+    // let msg = JSON.parse(e.data)
+
+    // if (msg["Type"] == "Turn" && game.turn == msg["Player"]){
+    //     sq[msg["Block"]].click()
+    // }
+    // console.log(msg["Block"])
+    console.log(e.data)
+}
+
+ws.onclose = function(){
+    console.log("Disconnected")
+}
 
 // Building the field with user size
 const field = document.getElementById('field')
@@ -18,6 +28,7 @@ const field = document.getElementById('field')
 class Game{
 
     constructor(name1,name2,size){
+        this.field = 
         this.player1 = name1
         this.player2 = name2
         this.size = size
@@ -49,7 +60,8 @@ class Game{
             el.id = total_id
             el.state = null;
             el.onclick = function(){game.move(this)}
-    
+            el.style.backgroundSize = "100%";
+            el.style.backgroundRepeat = "no-repeat";
             field.appendChild(el)
             total_id++
         }
@@ -58,16 +70,20 @@ class Game{
     move(obj){
         if (!obj.state) {
             
-            obj.state = this.turn 
-            console.log(obj.state)
-    
-            if (this.turn == "Petro"){
-                obj.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/player.jpg?raw=true)"
+            obj.state = this.turn      
+            if (this.turn == game.player1){
+                obj.style.backgroundImage = "url(static/img/x.jpg)"
             }
             else{
-                obj.style.backgroundImage = "url(https://github.com/Kroid/tick-tack-30line/blob/master/img/ai.jpg?raw=trueg)"
+                obj.style.backgroundImage = "url(static/img/o.jpg)"
             }
             // history = history.concat({"Player":state,"Square":id})
+            this.isGameOver()
+            ws.send(JSON.stringify({
+                Type: "Turn",
+                Player: this.turn,
+                Block: obj.id
+              }))
             this.next_turn()
         }
     }
@@ -80,10 +96,59 @@ class Game{
             this.turn = this.player1
         }
     }
+
+    prepareMatrix() {
+
+        let i, j
+      
+        for (i = 0, j = sq.length; i < j; i += this.size) {
+          tmp.push(sq.slice(i, i + this.size))
+        }
+
+        for (let i = 0; i < tmp.length; i++) {
+            let vertical = []
+            diagonale1[i] = tmp[i][i]
+            diagonale2[i] = tmp[i][tmp.length - i -1]
+            for(let y = 0; y < tmp.length; y++){
+                vertical.push(tmp[y][i])
+            }
+            verticals.push(vertical)
+        }
+      }
+
+      isGameOver(){
+        for(let i = 0; i<tmp.length; i++){
+    
+            if (tmp[i].every(player1Winner) || verticals[i].every(player1Winner) || diagonale1.every(player1Winner) || diagonale2.every(player1Winner)){
+                alert(game.player1 + " win")
+                location.reload()
+            }
+            else if (tmp[i].every(player2Winner) || verticals[i].every(player2Winner) || diagonale1.every(player2Winner) || diagonale2.every(player2Winner)){
+                alert(game.player2 + " win")
+                location.reload()
+            }
+            else if (tmp.every(x=>x==true)){
+                alert("")
+                location.reload()
+            }
+        }
+    }
+
+}
+
+function player1Winner(element, index, Array){
+    return element.state == game.player1
+}
+
+function player2Winner(element, index, Array){
+    return element.state == game.player2
 }
 
 
 game = new Game("Petro","Maria", 3)
 game.build()
 
-var history = []
+var tmp = [], diagonale1 = [], diagonale2 = [], verticals = []
+var sq = Array.from(document.getElementsByClassName('squares'))
+
+game.prepareMatrix()

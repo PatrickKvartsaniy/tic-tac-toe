@@ -57,11 +57,7 @@ h4{
 
 
 .squares {
-    background-color: white;
+    background: #fff;
     border: 2px solid black;
     float: left;
-    /* min-height: 60px;
-    max-height: 100px;
-    min-width: 60px;
-    max-width: 100px; */
 }
