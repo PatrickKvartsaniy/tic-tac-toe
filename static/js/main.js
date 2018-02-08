@@ -1,44 +1,149 @@
-ws = new WebSocket("ws://" + location.host + "/connect")
+// ws = new WebSocket("ws://" + location.host + "/connect")
+const ws = io.connect('http://' + document.domain + ':' + location.port + "/game")
 
-ws.onopen = function(){
-    console.log("Connetcted")
-    // ws.send("Connect")
+
+//Create player connection
+
+class Player{
+    
+    constructor(name,table_size){
+        this.name = name,
+        this.table_size = table_size
+    }
+    connect(){
+        // let names = document.getElementsByTagName('h4')
+        // if(!this.table_size){
+        //     names[1].innerHTML = this.name
+        // }
+        // else{
+        //     names[0].innerHTML = this.name
+        // }
+        ws.emit('message', {
+            Type: "Connection",
+            name: this.name,
+            size: this.table_size
+          });
+    }
 }
 
-ws.onmessage = function(e){
+var player1, player2
 
-    // let msg = JSON.parse(e.data)
+//Cheking if logged in and create player
 
-    // if (msg["Type"] == "Turn" && game.turn == msg["Player"]){
-    //     sq[msg["Block"]].click()
-    // }
-    // console.log(msg["Block"])
-    console.log(e.data)
+if (!localStorage.getItem('player_name')){
+    ws.disconnect()
+    window.location.href = "/login"
 }
 
-ws.onclose = function(){
+else if (localStorage.getItem('table_size') != null){
+    player1 = new Player(localStorage.getItem('player_name'),localStorage.getItem('table_size'))
+    game_size = player1.table_size
+    player1.connect()
+}
+
+else{
+    player2 = new Player(localStorage.getItem('player_name'))
+    player2.connect()
+}
+// ws.onmessage = function(message){
+
+//     let msg = JSON.parse(e.data)
+
+//     if (msg["Type"] == "Turn" && game.turn == msg["Player"]){
+//         sq[msg["Block"]].click()
+//     }
+//     console.log(msg["Block"])
+//     console.log(e.data)
+    
+// }
+
+//Waiting for second player
+
+function checkConnection(){
+    if(!player1){
+        try {
+            ws.emit('message', {
+                Type: "ping",
+                player: "player1"
+            });   
+        } catch (error) {}
+    }
+    else if(!player2){
+        try {
+            ws.emit('message', {
+                Type: "ping",
+                player: "player2"
+            });   
+        } catch (error) {}
+   }
+}
+
+
+ws.on('message', function(message){
+ 
+    // console.log(message)
+
+    if (message["Type"] == "Turn" && game.turn == message["Player"]){
+        sq[parseInt(message["Block"])].click()
+    }   
+
+    else if (message["Type"] == "Connection"){
+
+        if(!message["size"]){
+            player2 = new Player(message['name'])
+        }
+        else{
+            player1 = new Player(message['name'],message['size'])
+            game_size = player1.game_size
+        }
+    }
+
+    else if (message["Type"] == 'ping'){
+        if(message['player'] == "player1"){
+            try {
+                ws.emit('message', {
+                    Type: "Connection",
+                    name: player1.name,
+                    size: player1.table_size
+                  });
+            } catch (error) {}
+        }
+        else if(message['player'] == "player2"){
+            try {
+                ws.emit('message', {
+                    Type: "Connection",
+                    name: player2.name,
+                    size: player2.table_size
+                  });
+            } catch (error) {}
+        }
+    }
+})
+
+
+ws.disconnect = function(){
     console.log("Disconnected")
 }
 
-// Building the field with user size
-const field = document.getElementById('field')
+// const field = document.getElementById('field')
 
 // Create class game
 
-class Game{
+var sq = []
 
-    constructor(name1,name2,size){
-        this.field = 
-        this.player1 = name1
-        this.player2 = name2
-        this.size = size
-        this.turn = name1
+class Table{
+    constructor(size){
+        this.size  = size
+        this.tmp = []
+        this.diagonale1 = []
+        this.diagonale2 = []
+        this.verticals = []
     }
 
     build(){
-    
         let total_id = 0;
-    
+        let field = document.getElementById('field')
+
         for (let i = 0; i < this.size*this.size; i++) {
             let el = document.createElement('div')
             el.className = "squares"
@@ -66,12 +171,49 @@ class Game{
             total_id++
         }
     }
+    
+    prepareMatrix() {
+        let i, j      
+        for (i = 0, j = sq.length; i < j; i += this.size) {
+            this.tmp.push(sq.slice(i, i + this.size))
+        }
+
+        for (let i = 0; i < this.tmp.length; i++) {
+            let vertical = []
+            this.diagonale1[i] = this.tmp[i][i]
+            this.diagonale2[i] = this.tmp[i][this.tmp.length - i -1]
+            for(let y = 0; y < this.tmp.length; y++){
+                vertical.push(this.tmp[y][i])
+            }
+            this.verticals.push(vertical)
+        }
+      }
+
+}
+
+
+class Game{
+
+    constructor(name1,name2,size){
+        this.player1_name = name1
+        this.player2_name = name2
+        this.turn = name1
+    }
+
+// Creating and adding squares to field
+
+    start(){
+        table.build()
+        let name_spaces = document.getElementsByTagName('h4')
+        name_spaces[0].innerHTML = this.player1_name
+        name_spaces[1].innerHTML = this.player2_name
+    }
 
     move(obj){
         if (!obj.state) {
             
             obj.state = this.turn      
-            if (this.turn == game.player1){
+            if (this.turn == game.player1_name){
                 obj.style.backgroundImage = "url(static/img/x.jpg)"
             }
             else{
@@ -79,57 +221,46 @@ class Game{
             }
             // history = history.concat({"Player":state,"Square":id})
             this.isGameOver()
-            ws.send(JSON.stringify({
-                Type: "Turn",
-                Player: this.turn,
-                Block: obj.id
-              }))
+            // ws.send(JSON.stringify({
+            //     Type: "Turn",
+            //     Player: this.turn,
+            //     Block: obj.id
+            //   }))
+            ws.emit('message', {
+                    Type: "Turn",
+                    Player: this.turn,
+                    Block: obj.id
+                  });
             this.next_turn()
         }
     }
 
     next_turn(){
-        if (this.turn == this.player1){
-            this.turn = this.player2
+        if (this.turn == this.player1_name){
+            this.turn = this.player2_name
         }
         else{
-            this.turn = this.player1
+            this.turn = this.player1_name
         }
     }
 
-    prepareMatrix() {
 
-        let i, j
-      
-        for (i = 0, j = sq.length; i < j; i += this.size) {
-          tmp.push(sq.slice(i, i + this.size))
-        }
+// Algorithm for make gameover cheking easyer
 
-        for (let i = 0; i < tmp.length; i++) {
-            let vertical = []
-            diagonale1[i] = tmp[i][i]
-            diagonale2[i] = tmp[i][tmp.length - i -1]
-            for(let y = 0; y < tmp.length; y++){
-                vertical.push(tmp[y][i])
-            }
-            verticals.push(vertical)
-        }
-      }
-
-      isGameOver(){
-        for(let i = 0; i<tmp.length; i++){
+    isGameOver(){
+        for(let i = 0; i<table.tmp.length; i++){
     
-            if (tmp[i].every(player1Winner) || verticals[i].every(player1Winner) || diagonale1.every(player1Winner) || diagonale2.every(player1Winner)){
-                alert(game.player1 + " win")
-                location.reload()
+            if (table.tmp[i].every(player1Winner) || table.verticals[i].every(player1Winner) || table.diagonale1.every(player1Winner) || table.diagonale2.every(player1Winner)){
+                alert(game.player1_name + " win")
+                window.location.href = "/login"
             }
-            else if (tmp[i].every(player2Winner) || verticals[i].every(player2Winner) || diagonale1.every(player2Winner) || diagonale2.every(player2Winner)){
-                alert(game.player2 + " win")
-                location.reload()
+            else if (table.tmp[i].every(player2Winner) || table.verticals[i].every(player2Winner) || table.diagonale1.every(player2Winner) || table.diagonale2.every(player2Winner)){
+                alert(game.player2_name + " win")
+                window.location.href = "/login"
             }
-            else if (tmp.every(x=>x==true)){
+            else if (table.tmp.every(x=>x==true)){
                 alert("")
-                location.reload()
+                window.location.href = "/login"
             }
         }
     }
@@ -137,18 +268,36 @@ class Game{
 }
 
 function player1Winner(element, index, Array){
-    return element.state == game.player1
+    return element.state == game.player1_name
 }
 
 function player2Winner(element, index, Array){
-    return element.state == game.player2
+    return element.state == game.player2_name
 }
 
 
-game = new Game("Petro","Maria", 3)
-game.build()
 
-var tmp = [], diagonale1 = [], diagonale2 = [], verticals = []
-var sq = Array.from(document.getElementsByClassName('squares'))
+// tmp = [], diagonale1 = [], diagonale2 = [], verticals = []
 
-game.prepareMatrix()
+function Main(){
+    active = false
+    try {
+        game = new Game(player1.name,player2.name)
+        table = new Table(parseInt(player1.table_size))
+        game.start()
+        sq = Array.from(document.getElementsByClassName('squares'))
+        table.prepareMatrix()
+        active = true
+    } catch (error) {
+        console.log("Cheking connection")   
+        checkConnection()
+    }
+    if(!active){
+        setTimeout(function(){
+            Main()
+        },3000)
+    }
+
+}
+
+Main()

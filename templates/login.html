@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Tic Tac Toe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="static/css/style.css" />
+</head>
+<body>
+    <div id='main' class="container-fluid">
+        <h1>Tic Tac Toe</h1>
+        <form style="padding-left: 150px;" id = 'join'>
+            <h3>Join</h3>
+            <div class="form-group">
+                <label for="join">Your name</label>
+                <input class="form-control">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="joinCookie()">Join Game</button>
+        </form>
+        <form style="float:right; padding-right: 150px;" id ='admin'>
+            <h3>New game</h3>
+                <div class="form-group">
+                    <label for="admin">Your name</label>
+                    <input class="form-control">
+                </div>
+
+                <div class="form-group">
+                        <label for="exampleFormControlSelect1">Select field size</label>
+                        <select class="form-control" id="table_size">
+                        <option>3x3</option>
+                        <option>4x4</option>
+                        <option>5x5</option>
+                        <option>6x6</option>
+                        </select>
+                </div>
+                <button type="button" class="btn btn-success" onclick="adminCookie()">Create table</button>
+        </form>
+    </div>
+    <script>
+
+        localStorage.removeItem("player_name");
+        localStorage.removeItem("table_size");
+
+        var join = document.getElementById('join')
+        var admin = document.getElementById('admin')
+
+        function joinCookie(){
+            if (join[0].value!="") {
+                localStorage.setItem("player_name",join[0].value)
+                window.location.href = '/game'
+            }
+            else{
+                alert("Fill the form, please")
+            }
+        }
+
+        function adminCookie(){
+            if (admin[0].value != "" && admin[1].value !=""){
+                localStorage.setItem("player_name",admin[0].value)
+                localStorage.setItem("table_size",admin[1].value[0])
+                window.location.href = '/game'
+            }
+            else{
+                alert("Fill the form, please")
+            }
+        }
+
+
+    </script>
+</body>
+</html>
