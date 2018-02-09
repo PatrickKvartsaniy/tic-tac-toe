@@ -1,10 +1,16 @@
 from flask import Flask, render_template, url_for
 from flask_socketio import SocketIO, emit
-import os
+from flask_sqlalchemy import SQLAlchemy
+from model import Replay
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:erasmusmundus@localhost/tictac'
 socket = SocketIO(app)
+
+db = SQLAlchemy(app)
+
+#print(Replay.query.all())
 
 @app.route('/login')
 def index():
@@ -16,12 +22,17 @@ def game():
 
 @socket.on('message', namespace='/game')
 def message(message):
-    print(f"message {message}")
-    emit('message', message, broadcast=True)
+    if message['Type'] == 'gameover':
+        try:
+            hist = message['history']
+            replay = Replay(hist['Info']['Date'], message['size'], hist['Info']['Player1'],
+                            hist['Info']['Player2'], message['winner'], str(hist['Turns']))
 
-# @socket.on('connect', namespace='/chat')
-# def test_connect():
-#     emit('my response', {'data': 'Connected', 'count': 0})
+            db.session.add(replay)
+            db.session.commit()
+        except Exception:
+            print("Can not save data")
+    emit('message', message, broadcast=True)
 
 
 if __name__ == '__main__':

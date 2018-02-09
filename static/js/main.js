@@ -118,6 +118,12 @@ ws.on('message', function(message){
             } catch (error) {}
         }
     }
+
+    else if(message["Type"] == 'gameover' && game.turn == message["winner"]){
+        alert(message["winner"] + " win")
+        ws.disconnect()
+        window.location.href = "/login"
+    }
 })
 
 
@@ -164,7 +170,13 @@ class Table{
     
             el.id = total_id
             el.state = null;
-            el.onclick = function(){game.move(this)}
+            el.addEventListener('click', function(event) {
+                if (event.isTrusted) {
+                  game.move(this)
+                } else {
+                 game.move(this,true)
+                }
+              });
             el.style.backgroundSize = "100%";
             el.style.backgroundRepeat = "no-repeat";
             field.appendChild(el)
@@ -188,7 +200,6 @@ class Table{
             this.verticals.push(vertical)
         }
       }
-
 }
 
 
@@ -198,6 +209,7 @@ class Game{
         this.player1_name = name1
         this.player2_name = name2
         this.turn = name1
+        this.history = {}
     }
 
 // Creating and adding squares to field
@@ -207,31 +219,42 @@ class Game{
         let name_spaces = document.getElementsByTagName('h4')
         name_spaces[0].innerHTML = this.player1_name
         name_spaces[1].innerHTML = this.player2_name
-    }
+        this.history["Turns"] = []
+        this.history["Info"] = {}
+        this.history["Info"] = {
+                            "Player1":this.player1_name,
+                            "Player2":this.player2_name,
+                            "Date": new Date().toLocaleString()
+                        }
+    };
 
-    move(obj){
-        if (!obj.state) {
-            
-            obj.state = this.turn      
-            if (this.turn == game.player1_name){
-                obj.style.backgroundImage = "url(static/img/x.jpg)"
+    move(obj, trust=false){
+        if (this.turn ==(localStorage.getItem('player_name')) || trust){
+            if (!obj.state) {
+                
+                obj.state = this.turn      
+                if (this.turn == game.player1_name){
+                    obj.style.backgroundImage = "url(static/img/x.jpg)"
+                }
+                else{
+                    obj.style.backgroundImage = "url(static/img/o.jpg)"
+                }
+                this.history['Turns'].push(parseInt(obj.id))
+
+                // history = history.concat({"Player":state,"Square":id})
+                this.isGameOver()
+                // ws.send(JSON.stringify({
+                //     Type: "Turn",
+                //     Player: this.turn,
+                //     Block: obj.id
+                //   }))
+                ws.emit('message', {
+                        Type: "Turn",
+                        Player: this.turn,
+                        Block: obj.id
+                    });
+                this.next_turn()
             }
-            else{
-                obj.style.backgroundImage = "url(static/img/o.jpg)"
-            }
-            // history = history.concat({"Player":state,"Square":id})
-            this.isGameOver()
-            // ws.send(JSON.stringify({
-            //     Type: "Turn",
-            //     Player: this.turn,
-            //     Block: obj.id
-            //   }))
-            ws.emit('message', {
-                    Type: "Turn",
-                    Player: this.turn,
-                    Block: obj.id
-                  });
-            this.next_turn()
         }
     }
 
@@ -250,16 +273,47 @@ class Game{
     isGameOver(){
         for(let i = 0; i<table.tmp.length; i++){
     
-            if (table.tmp[i].every(player1Winner) || table.verticals[i].every(player1Winner) || table.diagonale1.every(player1Winner) || table.diagonale2.every(player1Winner)){
+            if (
+            table.tmp[i].every(player1Winner) || 
+            table.verticals[i].every(player1Winner) || 
+            table.diagonale1.every(player1Winner) || 
+            table.diagonale2.every(player1Winner))
+            {
+                ws.emit('message', {
+                    Type: "gameover",
+                    board: table.size,
+                    winner: game.player1_name,
+                    history: this.history
+                  });
                 alert(game.player1_name + " win")
+                ws.disconnect()
                 window.location.href = "/login"
             }
-            else if (table.tmp[i].every(player2Winner) || table.verticals[i].every(player2Winner) || table.diagonale1.every(player2Winner) || table.diagonale2.every(player2Winner)){
+            else if (
+            table.tmp[i].every(player2Winner) || 
+            table.verticals[i].every(player2Winner) || 
+            table.diagonale1.every(player2Winner) || 
+            table.diagonale2.every(player2Winner))
+            {           
+                ws.emit('message', {
+                    Type: "gameover",
+                    board: table.size,
+                    winner: game.player2_name,
+                    history: this.history
+                  });
                 alert(game.player2_name + " win")
+                ws.disconnect()
                 window.location.href = "/login"
             }
             else if (table.tmp.every(x=>x==true)){
-                alert("")
+                ws.emit('message', {
+                    Type: "gameover",
+                    board: table.size,
+                    winner: "Nobody",
+                    history: this.history
+                  });
+                alert("Nobody win")
+                ws.disconnect()
                 window.location.href = "/login"
             }
         }
@@ -274,10 +328,6 @@ function player1Winner(element, index, Array){
 function player2Winner(element, index, Array){
     return element.state == game.player2_name
 }
-
-
-
-// tmp = [], diagonale1 = [], diagonale2 = [], verticals = []
 
 function Main(){
     active = false
