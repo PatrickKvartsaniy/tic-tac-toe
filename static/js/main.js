@@ -224,7 +224,7 @@ class Game{
         this.history["Info"] = {
                             "Player1":this.player1_name,
                             "Player2":this.player2_name,
-                            "Date": new Date().toLocaleString()
+                            "Date": new Date().toLocaleString().slice(0,-3)
                         }
     };
 

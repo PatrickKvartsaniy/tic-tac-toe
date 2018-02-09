@@ -37,6 +37,30 @@
                 </div>
                 <button type="button" class="btn btn-success" onclick="adminCookie()">Create table</button>
         </form>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <!-- <th scope="col">#</th> -->
+                    <th scope="col">Date</th>
+                    <th scope="col">Player1</th>
+                    <th scope="col">Player2</th>
+                    <th scope="col">Table size</th>
+                    <th scope="col">Winner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in latest %}
+                    <tr>
+                        <!-- <th scope="row"></th> -->
+                        <td>{{game.date}}</td>
+                        <td>{{game.player1}}</td>
+                        <td>{{game.player2}}</td>
+                        <td>{{game.size}}x{{game.size}}</td>
+                        <td>{{game.winner}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <script>
 

@@ -6,15 +6,14 @@ from model import Replay
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:erasmusmundus@localhost/tictac'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 socket = SocketIO(app)
 
 db = SQLAlchemy(app)
 
-#print(Replay.query.all())
-
 @app.route('/login')
 def index():
-    return render_template('login.html')
+    return render_template('login.html', latest=Replay.query.limit(3).all())
 
 @app.route('/game')
 def game():    
@@ -36,4 +35,4 @@ def message(message):
 
 
 if __name__ == '__main__':
-    socket.run(app, port = 8000)
+    socket.run(app, port = 5050)
