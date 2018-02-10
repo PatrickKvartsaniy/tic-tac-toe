@@ -37,10 +37,9 @@
                 </div>
                 <button type="button" class="btn btn-success" onclick="adminCookie()">Create table</button>
         </form>
-        <table class="table">
+        <table class="table table-hover">
             <thead class="thead-dark">
                 <tr>
-                    <!-- <th scope="col">#</th> -->
                     <th scope="col">Date</th>
                     <th scope="col">Player1</th>
                     <th scope="col">Player2</th>
@@ -50,9 +49,8 @@
             </thead>
             <tbody>
                 {% for game in latest %}
-                    <tr>
-                        <!-- <th scope="row"></th> -->
-                        <td>{{game.date}}</td>
+                    <tr onclick="replayCookie(this)">
+                        <td class="date">{{game.date}}</td>
                         <td>{{game.player1}}</td>
                         <td>{{game.player2}}</td>
                         <td>{{game.size}}x{{game.size}}</td>
@@ -62,36 +60,6 @@
             </tbody>
         </table>
     </div>
-    <script>
-
-        localStorage.removeItem("player_name");
-        localStorage.removeItem("table_size");
-
-        var join = document.getElementById('join')
-        var admin = document.getElementById('admin')
-
-        function joinCookie(){
-            if (join[0].value!="") {
-                localStorage.setItem("player_name",join[0].value)
-                window.location.href = '/game'
-            }
-            else{
-                alert("Fill the form, please")
-            }
-        }
-
-        function adminCookie(){
-            if (admin[0].value != "" && admin[1].value !=""){
-                localStorage.setItem("player_name",admin[0].value)
-                localStorage.setItem("table_size",admin[1].value[0])
-                window.location.href = '/game'
-            }
-            else{
-                alert("Fill the form, please")
-            }
-        }
-
-
-    </script>
+    <script src="static/js/login.js"></script>
 </body>
 </html>

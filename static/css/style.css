@@ -14,6 +14,10 @@ form{
     padding-top: 25px;
 }
 
+tbody th:hover{
+    cursor: pointer;
+}
+
 #root, #main{
     position: fixed;
     top: 0;
@@ -43,9 +47,10 @@ form{
 }
 
 
-h3{
+#tablo{
     text-align: center;
     padding: 5px;
+    color: aqua;
 }
 
 h4{

@@ -1,6 +1,8 @@
 // ws = new WebSocket("ws://" + location.host + "/connect")
-const ws = io.connect('http://' + document.domain + ':' + location.port + "/game")
-
+const basic_url = 'http://' + document.domain + ':' + location.port
+const ws = io.connect(basic_url + "/game")
+const field = document.getElementById('field')
+const tablo = document.getElementById('tablo')
 
 //Create player connection
 
@@ -26,11 +28,37 @@ class Player{
     }
 }
 
-var player1, player2
+var player1, player2, replay
+
+function setTablo(arg){
+    tablo.innerHTML = arg
+}
 
 //Cheking if logged in and create player
 
-if (!localStorage.getItem('player_name')){
+if(localStorage.getItem('replay') != null){
+    fetch(basic_url+'/api').then(function(r){
+        if(r.status != 200){
+            console.log("Problems, " + r.status)
+            return
+        }
+        r.json().then(function(data){
+            for(let i = 0; i<data.length; i++){
+                if(data[i]['date']==localStorage.getItem('replay')){
+                    replay = data[i]
+                    player1 = new Player(replay['player1'],replay['size'])
+                    player2 = new Player(replay['player2'])
+                    // btn = document.createElement('button')
+                    // btn.className = "btn-success"
+                    // btn.innerHTML = "Next"
+                    // tablo.appendChild(btn)
+                }
+            }
+        })
+    })
+}
+
+else if(!localStorage.getItem('player_name')){
     ws.disconnect()
     window.location.href = "/login"
 }
@@ -131,8 +159,6 @@ ws.disconnect = function(){
     console.log("Disconnected")
 }
 
-// const field = document.getElementById('field')
-
 // Create class game
 
 var sq = []
@@ -148,7 +174,6 @@ class Table{
 
     build(){
         let total_id = 0;
-        let field = document.getElementById('field')
 
         for (let i = 0; i < this.size*this.size; i++) {
             let el = document.createElement('div')
@@ -241,18 +266,13 @@ class Game{
                 }
                 this.history['Turns'].push(parseInt(obj.id))
 
-                // history = history.concat({"Player":state,"Square":id})
                 this.isGameOver()
-                // ws.send(JSON.stringify({
-                //     Type: "Turn",
-                //     Player: this.turn,
-                //     Block: obj.id
-                //   }))
                 ws.emit('message', {
                         Type: "Turn",
                         Player: this.turn,
                         Block: obj.id
                     });
+                setTablo(this.turn)
                 this.next_turn()
             }
         }
