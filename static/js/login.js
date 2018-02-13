@@ -33,5 +33,5 @@ function test(item){
 function replayCookie(tr){
     // console.log(tr)
     localStorage.setItem("replay",tr.childNodes[1].innerText)
-    // window.location.href = '/game'
+    window.location.href = '/game'
 }

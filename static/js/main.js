@@ -3,6 +3,7 @@ const basic_url = 'http://' + document.domain + ':' + location.port
 const ws = io.connect(basic_url + "/game")
 const field = document.getElementById('field')
 const tablo = document.getElementById('tablo')
+const root = document.getElementById('root')
 
 //Create player connection
 
@@ -30,11 +31,13 @@ class Player{
 
 var player1, player2, replay
 
-function setTablo(arg){
-    tablo.innerHTML = arg
+function* replay(){
+    for(let i=0; i<replay.history.length;i++){
+        yield replay.history[i]
+    }
 }
 
-//Cheking if logged in and create player
+//Cheking if logged in or game type is replay and create player
 
 if(localStorage.getItem('replay') != null){
     fetch(basic_url+'/api').then(function(r){
@@ -48,10 +51,10 @@ if(localStorage.getItem('replay') != null){
                     replay = data[i]
                     player1 = new Player(replay['player1'],replay['size'])
                     player2 = new Player(replay['player2'])
-                    // btn = document.createElement('button')
-                    // btn.className = "btn-success"
-                    // btn.innerHTML = "Next"
-                    // tablo.appendChild(btn)
+                    btn = document.createElement('button')
+                    btn.className = "btn-success"
+                    btn.innerHTML = "Next"
+                    root.appendChild(btn)
                 }
             }
         })

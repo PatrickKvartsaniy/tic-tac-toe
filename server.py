@@ -1,25 +1,52 @@
-import asyncio
-import aiohttp
-from aiohttp import web
+from flask import Flask, render_template, url_for
+from flask_socketio import SocketIO, emit
+from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api
+from model import Replay
 
-async def handler(request):
+app = Flask(__name__, static_url_path='/static')
+app.config['SECRET_KEY'] = "REALLY SECRET KEY"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:password@0.0.0.0:5003/tictac'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    ws = web.WebSocketResponse()
-    await ws.prepare(request)
+socket = SocketIO(app)
+db = SQLAlchemy(app)
+api = Api(app)
 
-    async for msg in ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            if msg.data == "close":
-                ws.close()
-            else:
-                await ws.send_str(msg.data + '/answer')
-        elif msg.type == aiohttp.WSMsgType.ERROR:
-            print('ws connection closed with exception %s' %
-                  ws.exception())
-    print("WebSocket connection closed")
-    return ws
 
-app = web.Application()
-app.route.add_get('/game', handler)
+class ReplaysApi(Resource):
+    def get(self):
+        data = [vars(game) for game in Replay.query.limit(3).all()]
+        for game in data:
+            del game['_sa_instance_state']
+        return data
 
-loop = asyncio.get_evet_loop()
+api.add_resource(ReplaysApi,'/api')
+
+db.create_all()
+
+@app.route('/login')
+def index():
+    return render_template('login.html', latest = Replay.query.limit(3).all())
+
+@app.route('/game')
+def game():    
+    return render_template('game.html')
+
+@socket.on('message', namespace='/game')
+def message(message):
+    if message['Type'] == 'gameover':
+        try:
+            hist = message['history']
+            replay = Replay(hist['Info']['Date'], message['size'], hist['Info']['Player1'],
+                            hist['Info']['Player2'], message['winner'], str(hist['Turns']))
+
+            db.session.add(replay)
+            db.session.commit()
+        except Exception:
+            print("Cannot save data")
+    emit('message', message, broadcast=True)
+
+
+if __name__ == '__main__':
+    socket.run(app,host='0.0.0.0',port=5000)
