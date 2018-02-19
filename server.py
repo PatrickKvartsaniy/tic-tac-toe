@@ -18,12 +18,12 @@ db = SQLAlchemy(app)
 api = Api(app)
 
 
-class ReplaysApi(Resource):
-    def get(self):
-        data = [vars(game) for game in Replay.query.limit(3).all()]
-        for game in data:
-            del game['_sa_instance_state']
-        return data
+# class ReplaysApi(Resource):
+#     def get(self):
+#         data = [vars(game) for game in Replay.query.limit(3).all()]
+#         for game in data:
+#             del game['_sa_instance_state']
+#         return data
 
 api.add_resource(ReplaysApi,'/api')
 
@@ -36,7 +36,8 @@ def index():
 
 @app.route('/login')
 def login():
-    return render_template('login.html', latest = Replay.query.limit(3).all())
+    return render_template('login.html')
+    # latest = Replay.query.limit(3).all())
 
 @app.route('/game')
 def game():    
