@@ -55,5 +55,7 @@ def message(message):
 
 
 if __name__ == '__main__':
-    socket.run(app,host='0.0.0.0',port=5000)
+    host,port = '127.0.0.1',5000
+    print(f"Serve on port: {port}")
+    socket.run(app,host=host,port=port)
     
