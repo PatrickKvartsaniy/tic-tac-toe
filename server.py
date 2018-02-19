@@ -25,7 +25,7 @@ api = Api(app)
 #             del game['_sa_instance_state']
 #         return data
 
-api.add_resource(ReplaysApi,'/api')
+# api.add_resource(ReplaysApi,'/api')
 
 db.create_all()
 
