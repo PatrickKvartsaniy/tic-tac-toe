@@ -31,12 +31,20 @@ class Player{
 
 var player1, player2, replay
 
-function* replay(){
-    for(let i=0; i<replay.history.length;i++){
-        yield replay.history[i]
+function startReplay(hist){
+    function* replayGen(){
+        for(let i=0; i<hist.length;i++){
+            yield hist[i]
+        }
     }
+    playReplay = replayGen()
+    btn = document.createElement('button')
+    btn.className = "btn-success"
+    btn.innerHTML = "Next"
+    btn.onclick = function(){ sq[playReplay.next().value].click() }
+    root.appendChild(btn)
+    
 }
-
 //Cheking if logged in or game type is replay and create player
 
 if(localStorage.getItem('replay') != null){
@@ -51,10 +59,7 @@ if(localStorage.getItem('replay') != null){
                     replay = data[i]
                     player1 = new Player(replay['player1'],replay['size'])
                     player2 = new Player(replay['player2'])
-                    btn = document.createElement('button')
-                    btn.className = "btn-success"
-                    btn.innerHTML = "Next"
-                    root.appendChild(btn)
+                    startReplay(replay.history)
                 }
             }
         })
@@ -252,6 +257,7 @@ class Game{
         this.history["Info"] = {
                             "Player1":this.player1_name,
                             "Player2":this.player2_name,
+                            "size":player1.table_size,
                             "Date": new Date().toLocaleString().slice(0,-3)
                         }
     };
@@ -275,7 +281,7 @@ class Game{
                         Player: this.turn,
                         Block: obj.id
                     });
-                setTablo(this.turn)
+                // setTablo(this.turn)
                 this.next_turn()
             }
         }

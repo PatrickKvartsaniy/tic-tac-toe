@@ -6,7 +6,7 @@ from model import Replay
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:password@0.0.0.0:5003/tictac'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:erasmusmundus@localhost/tictac'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 socket = SocketIO(app)
@@ -36,17 +36,15 @@ def game():
 @socket.on('message', namespace='/game')
 def message(message):
     if message['Type'] == 'gameover':
-        try:
-            hist = message['history']
-            replay = Replay(hist['Info']['Date'], message['size'], hist['Info']['Player1'],
-                            hist['Info']['Player2'], message['winner'], str(hist['Turns']))
-
-            db.session.add(replay)
-            db.session.commit()
-        except Exception:
-            print("Cannot save data")
+        hist = message['history']
+        replay = Replay(hist['Info']['Date'], hist['Info']['size'], hist['Info']['Player1'],
+                        hist['Info']['Player2'], message['winner'], hist['Turns'])
+        db.session.add(replay)
+        db.session.commit()
+        print(message['history'])
     emit('message', message, broadcast=True)
 
 
 if __name__ == '__main__':
     socket.run(app,host='0.0.0.0',port=5000)
+    

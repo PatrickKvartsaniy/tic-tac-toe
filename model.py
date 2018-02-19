@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:password@db/tictac'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:erasmusmundus@localhost/tictac'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -14,7 +14,7 @@ class Replay(db.Model):
     player1 = db.Column(db.String(50), nullable=False)
     player2 = db.Column(db.String(50), nullable=False)
     winner = db.Column(db.String(50), nullable=False)
-    history = db.Column(db.String(150), nullable=False)
+    history = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     def __init__(self,date,size,player1,player2,winner,history):
         self.date = date
