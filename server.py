@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, redirect
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
@@ -6,7 +6,11 @@ from model import Replay
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://patrick:erasmusmundus@localhost/tictac'
+
+local_db = 'postgresql://patrick:erasmusmundus@localhost/tictac'
+heroku_db = "postgres://adtgejmnvprvxj:e0ad8a40bfba4e77459351bd094ee44c4e70f8651efb917c61dc4ba3cc3f3c59@ec2-54-217-236-201.eu-west-1.compute.amazonaws.com:5432/d5emi4l61scuog" 
+
+app.config['SQLALCHEMY_DATABASE_URI'] = heroku_db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 socket = SocketIO(app)
@@ -25,8 +29,13 @@ api.add_resource(ReplaysApi,'/api')
 
 db.create_all()
 
-@app.route('/login')
+@app.route('/')
 def index():
+    return redirect('/login')
+
+
+@app.route('/login')
+def login():
     return render_template('login.html', latest = Replay.query.limit(3).all())
 
 @app.route('/game')
