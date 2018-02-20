@@ -60,7 +60,3 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"Serve on port: {port}")
     socket.run(app,host="0.0.0.0",port=port)
-<<<<<<< HEAD
-    
-=======
->>>>>>> 47e5ea908c722f2981426978b2e236871ca4ae4b
