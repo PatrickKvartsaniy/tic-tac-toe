@@ -1,4 +1,3 @@
-// ws = new WebSocket("ws://" + location.host + "/connect")
 const basic_url = 'http://' + document.domain + ':' + location.port
 const ws = io.connect(basic_url + "/game")
 const field = document.getElementById('field')
@@ -14,13 +13,6 @@ class Player{
         this.table_size = table_size
     }
     connect(){
-        // let names = document.getElementsByTagName('h4')
-        // if(!this.table_size){
-        //     names[1].innerHTML = this.name
-        // }
-        // else{
-        //     names[0].innerHTML = this.name
-        // }
         ws.emit('message', {
             Type: "Connection",
             name: this.name,
@@ -81,17 +73,7 @@ else{
     player2 = new Player(localStorage.getItem('player_name'))
     player2.connect()
 }
-// ws.onmessage = function(message){
 
-//     let msg = JSON.parse(e.data)
-
-//     if (msg["Type"] == "Turn" && game.turn == msg["Player"]){
-//         sq[msg["Block"]].click()
-//     }
-//     console.log(msg["Block"])
-//     console.log(e.data)
-    
-// }
 
 //Waiting for second player
 
