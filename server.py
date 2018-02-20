@@ -58,6 +58,6 @@ def message(message):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print(f"Serve on port: {port}")
-    socket.run(app,host=host,port=port)
+    print(f"serve on: {port}")
+    socket.run(app,port)
     
