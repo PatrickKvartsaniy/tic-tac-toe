@@ -1,1 +1,1 @@
-web: python server.py
+gunicorn -k eventlet server:app
