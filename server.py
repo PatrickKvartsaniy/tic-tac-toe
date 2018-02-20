@@ -8,7 +8,7 @@ import os
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
 
-local_db = 'postgresql://patrick:erasmusmundus@localhost/tictac'
+# local_db = 'postgresql://patrick:erasmusmundus@localhost/tictac'
 heroku_db = "postgres://adtgejmnvprvxj:e0ad8a40bfba4e77459351bd094ee44c4e70f8651efb917c61dc4ba3cc3f3c59@ec2-54-217-236-201.eu-west-1.compute.amazonaws.com:5432/d5emi4l61scuog" 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = heroku_db
@@ -19,14 +19,14 @@ db = SQLAlchemy(app)
 api = Api(app)
 
 
-# class ReplaysApi(Resource):
-#     def get(self):
-#         data = [vars(game) for game in Replay.query.limit(3).all()]
-#         for game in data:
-#             del game['_sa_instance_state']
-#         return data
+class ReplaysApi(Resource):
+    def get(self):
+        data = [vars(game) for game in Replay.query.limit(3).all()]
+        for game in data:
+            del game['_sa_instance_state']
+        return data
 
-# api.add_resource(ReplaysApi,'/api')
+api.add_resource(ReplaysApi,'/api')
 
 db.create_all()
 
@@ -37,8 +37,7 @@ def index():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
-    # latest = Replay.query.limit(3).all())
+    return render_template('login.html', latest = Replay.query.limit(3).all())
 
 @app.route('/game')
 def game():    
