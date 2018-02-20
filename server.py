@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
 from model import Replay
+import os
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "REALLY SECRET KEY"
@@ -56,7 +57,7 @@ def message(message):
 
 
 if __name__ == '__main__':
-    host,port = '127.0.0.1',5000
+    port = int(os.environ.get('PORT', 5000))
     print(f"Serve on port: {port}")
-    socket.run(app,host=host,port=port)
+    socket.run(app,host="0.0.0.0",port=port)
     
