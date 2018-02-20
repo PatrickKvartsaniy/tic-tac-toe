@@ -1,5 +1,5 @@
 // ws = new WebSocket("ws://" + location.host + "/connect")
-const basic_url = 'https://' + document.domain + ':' + location.port
+const basic_url = 'http://' + document.domain + ':' + location.port
 const ws = io.connect(basic_url + "/game")
 const field = document.getElementById('field')
 const tablo = document.getElementById('tablo')
