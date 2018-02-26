@@ -1,4 +1,4 @@
-const basic_url = window.location.hostname
+const basic_url = 'http://' + document.domain + ':' + location.port
 const ws = io.connect(basic_url + "/game")
 const field = document.getElementById('field')
 const tablo = document.getElementById('tablo')
