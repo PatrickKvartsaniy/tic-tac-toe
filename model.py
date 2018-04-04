@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 # local_db = 'postgresql://patrick:erasmusmundus@localhost/tictac'
-heroku_db = "postgres://adtgejmnvprvxj:e0ad8a40bfba4e77459351bd094ee44c4e70f8651efb917c61dc4ba3cc3f3c59@ec2-54-217-236-201.eu-west-1.compute.amazonaws.com:5432/d5emi4l61scuog" 
+heroku_db = "postgres://pculbeyiknnvmk:bfc295bf29c6d388f801f61eb364a87bd1c9413fe8044dd3a1a522c5e5c5c61b@ec2-79-125-12-27.eu-west-1.compute.amazonaws.com:5432/dfcbjetebamtnt" 
 app.config['SQLALCHEMY_DATABASE_URI'] = heroku_db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
